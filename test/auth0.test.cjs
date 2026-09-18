@@ -1064,3 +1064,55 @@ for (const domain of [
     },
   )
 }
+
+// Model Apollo's final use of redirect_uri after custom authentication succeeds.
+test('preserves the popup redirect URI for Apollo final login handling', async () => {
+  const {
+    handler,
+    start,
+  } = setup()
+
+  const redirectUri =
+    'https://apollo.example.org/popup-complete'
+
+  // Start authentication with the popup destination supplied by Apollo.
+  const {
+    state,
+  } = await start(
+    redirectUri,
+  )
+
+  // Model the callback request Apollo passes to the custom auth handler.
+  const callbackRequest = {
+    query: {
+      code: 'authorization-code',
+      state,
+    },
+  }
+
+  // Complete authentication before Apollo processes the popup return state.
+  const user =
+    await handler.login(
+      callbackRequest,
+    )
+
+  assert.deepEqual(
+    user,
+    {
+      name: profile.name,
+      email: profile.email,
+    },
+  )
+
+  // Model Apollo parsing state after the custom handler succeeds.
+  const apolloState =
+    JSON.parse(
+      callbackRequest.query.state,
+    )
+
+  // Confirm Apollo still receives the original popup destination.
+  assert.equal(
+    apolloState.redirect_uri,
+    redirectUri,
+  )
+})

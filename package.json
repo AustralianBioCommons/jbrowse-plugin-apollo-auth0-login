@@ -17,7 +17,8 @@
     "clean": "rimraf dist",
     "build": "rolldown --config",
     "prepack": "yarn build",
-    "test": "node --test test/*.test.cjs"
+    "test": "node --test test/*.test.cjs",
+    "test:apollo": "node --test integration/apollo-contract.test.cjs"
   },
   "jbrowse-plugin": {
     "name": "ApolloAuth0Login"

@@ -11,20 +11,24 @@ on:
 jobs:
   unit-tests:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout plugin
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: yarn
+          package-manager-cache: false
 
+      # Node 24 still includes Corepack; enable its Yarn shims before using Yarn.
       - name: Enable Corepack
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack prepare yarn@4.18.0 --activate
+          yarn --version
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -37,18 +41,18 @@ jobs:
 
   apollo-integration:
     name: Apollo custom-auth contract
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: unit-tests
 
     # Skip integration only for direct pushes to dev.
     if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/dev') }}
-    
+
     steps:
       - name: Checkout plugin
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout Apollo3
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: GMOD/Apollo3
           ref: main
@@ -56,13 +60,16 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: yarn
+          package-manager-cache: false
 
       - name: Enable Corepack
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack prepare yarn@4.18.0 --activate
+          yarn --version
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -70,4 +77,4 @@ jobs:
       - name: Test Apollo authentication contract
         env:
           APOLLO3_PATH: ${{ github.workspace }}/.apollo3
-        run: node --test integration/apollo-contract.test.cjs
+        run: yarn test:apollo

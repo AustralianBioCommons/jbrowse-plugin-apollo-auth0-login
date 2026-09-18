@@ -12,13 +12,7 @@
 - Before modifying, creating, deleting, or staging any file, show the proposed changes and wait for explicit user approval.
 
 # Repository context
-Purpose: analyse OpenStack account capabilities and create IaC code to allow new deployment of architecture.
-
-- Prefer read-only OpenStack commands.
-- Check identity, quotas, services, networks, flavors, storage, and permissions.
-- Do not provision resources as part of capability discovery.
 - Add single line comments to main blocks of code and where abstract steps happen and any comment missing, especially where a long line of code >100 char is, with more than one operation in the line
 
 ## TODO
-- add options for message change from env
 - add option for icon change from env

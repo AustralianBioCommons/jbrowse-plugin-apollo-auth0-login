@@ -67,6 +67,18 @@ Copy the production `.mjs` bundle to a location that Apollo can access over HTTP
 
 The bundle may be served from the same web server as JBrowse/Apollo; it does not need to be hosted on an external service.
 
+### Local testing
+
+- Unit tests: `yarn test`
+- Integration test
+
+```bash
+#shallow clone of apollo3
+git clone --depth 1 https://github.com/GMOD/Apollo3.git /tmp/Apollo3
+export APOLLO_PATH=/tmp/Apollo3
+yarn test: apollo
+```
+
 ## 3. Configure Apollo
 
 Set the required environment variables on the Apollo collaboration server:

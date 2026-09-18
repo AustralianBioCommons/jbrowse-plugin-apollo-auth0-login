@@ -36,6 +36,8 @@ For example:
 https://example.org/apollo/auth/auth0
 ```
 
+For local dev, use: `http://localhost:3999/auth/auth0`
+
 The callback URL must match the Apollo `URL` configuration plus `/auth/auth0`.
 
 The plugin requests these OIDC scopes:

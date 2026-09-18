@@ -67,13 +67,24 @@ Copy the production `.mjs` bundle to a location that Apollo can access over HTTP
 
 The bundle may be served from the same web server as JBrowse/Apollo; it does not need to be hosted on an external service.
 
+### Local testing
+
+- Unit tests: `yarn test`
+- Integration test
+
+```bash
+#shallow clone of apollo3
+git clone --depth 1 https://github.com/GMOD/Apollo3.git /tmp/Apollo3
+export APOLLO_PATH=/tmp/Apollo3
+yarn test: apollo
+```
+
 ## 3. Configure Apollo
 
 Set the required environment variables on the Apollo collaboration server:
 
 ```env
-URL=https://apollo.example.org
-
+AUTH0_CALLBACK_URL=http://localhost:3999/auth/auth0
 AUTH0_DOMAIN=your-tenant.au.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
@@ -183,9 +194,48 @@ The PKCE verifier and nonce are never taken from browser-provided state.
 
 Pending authentication attempts expire after ten minutes.
 
-## 6. Limitations
+## 6. Compatibility and testing
 
-Pending authentication state is currently stored in memory inside the Apollo server process.
+This plugin targets the Apollo 3 custom-authentication interface implemented by the [`GMOD/Apollo3`](https://github.com/GMOD/Apollo3) collaboration server.
+
+The interface used by this plugin is based on:
+
+* the `Apollo-RegisterCustomAuth` extension point
+* custom handlers called as `handler(request, redirectUri)`
+* `{ url }` returned to start an external authentication flow
+* `{ name, email }` returned after successful authentication
+* OAuth `state` containing Apollo's `redirect_uri` so Apollo can complete its popup login flow
+
+The current compatibility baseline is the Apollo3 `main` branch checked by CI. At the time of this README update, the current published `@apollo-annotation/jbrowse-plugin-apollo` release is `1.1.2`.
+
+The unit tests explicitly model Apollo's final use of the authentication state and verify that:
+
+```text
+JSON.parse(state).redirect_uri
+```
+
+still contains the same popup return URL originally supplied by Apollo.
+
+A GitHub Actions integration test also checks out the real `GMOD/Apollo3` repository and inspects the collaboration-server authentication implementation. It verifies that the Apollo interface assumptions used by this plugin are still present, including:
+
+* `Apollo-RegisterCustomAuth`
+* custom authentication handlers
+* redirect-style `{ url }` results
+* authenticated `name` and `email`
+* callback `state`
+* Apollo's `redirect_uri` handling
+
+This upstream contract test is intended to detect Apollo authentication-interface changes when Apollo is updated.
+
+It is not a full browser end-to-end authentication test: CI does not start MongoDB, a complete Apollo deployment, or a live/mock Auth0 tenant. The plugin's OIDC protocol behaviour is tested separately with `openid-client` mocked at its external protocol boundary.
+
+Because the GitHub Action checks Apollo3 `main`, an upstream interface change may cause CI to fail before that change appears in a stable Apollo release. This is intentional and provides early warning that the plugin may need updating.
+
+## 7. Limitations
+
+Compatibility currently depends on Apollo 3's `Apollo-RegisterCustomAuth` interface. This is verified against the Apollo3 `main` branch in CI rather than treated as a permanently stable public API.
+
+Pending authentication state is stored in memory inside the Apollo server process.
 
 This means:
 

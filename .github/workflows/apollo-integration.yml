@@ -1,0 +1,80 @@
+name: Apollo plugin tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      # Node 24 still includes Corepack; enable its Yarn shims before using Yarn.
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.18.0 --activate
+          yarn --version
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run unit tests
+        run: yarn test
+
+      - name: Build plugin
+        run: yarn build
+
+  apollo-integration:
+    name: Apollo custom-auth contract
+    runs-on: ubuntu-24.04
+    needs: unit-tests
+
+    # Skip integration only for direct pushes to dev.
+    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/dev') }}
+
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v7
+
+      - name: Checkout Apollo3
+        uses: actions/checkout@v7
+        with:
+          repository: GMOD/Apollo3
+          ref: main
+          path: .apollo3
+          fetch-depth: 1
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.18.0 --activate
+          yarn --version
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Test Apollo authentication contract
+        env:
+          APOLLO3_PATH: ${{ github.workspace }}/.apollo3
+        run: yarn test:apollo

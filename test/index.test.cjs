@@ -3,12 +3,12 @@ const { test } = require('node:test')
 const { loadSource } = require('./helpers.cjs')
 const { version } = require('../package.json')
 
-// Provide the required Apollo and Auth0 configuration.
+// Provide the required Auth0 configuration.
 const environment = {
   AUTH0_DOMAIN: 'tenant.au.auth0.com',
   AUTH0_CLIENT_ID: 'test-client',
   AUTH0_CLIENT_SECRET: 'test-secret',
-  URL: 'https://apollo.example.org',
+  AUTH0_CALLBACK_URL: 'https://apollo.example.org/auth/auth0',
 }
 
 // Load the plugin with an isolated Auth0 handler and environment.
@@ -28,10 +28,12 @@ function setup(env = environment) {
       let resolve
       let reject
 
-      const promise = new Promise((resolvePromise, rejectPromise) => {
-        resolve = resolvePromise
-        reject = rejectPromise
-      })
+      const promise = new Promise(
+        (resolvePromise, rejectPromise) => {
+          resolve = resolvePromise
+          reject = rejectPromise
+        },
+      )
 
       this.calls.push({
         request,
@@ -91,17 +93,31 @@ test('registers the Auth0 login provider', () => {
     registrations,
   } = setup()
 
-  assert.equal(plugin.name, 'ApolloAuth0Login')
-  assert.equal(plugin.version, version)
+  assert.equal(
+    plugin.name,
+    'ApolloAuth0Login',
+  )
 
-  assert.equal(registrations.length, 1)
+  assert.equal(
+    plugin.version,
+    version,
+  )
+
+  assert.equal(
+    registrations.length,
+    1,
+  )
+
   assert.equal(
     registrations[0].name,
     'Apollo-RegisterCustomAuth',
   )
 
   // One handler must survive both OAuth legs.
-  assert.equal(instances.length, 1)
+  assert.equal(
+    instances.length,
+    1,
+  )
 
   const existing = {
     message: 'Existing login',
@@ -145,7 +161,8 @@ test('uses AUTH0_LOGIN_MESSAGE when configured', () => {
     register,
   } = setup({
     ...environment,
-    AUTH0_LOGIN_MESSAGE: 'Continue with institutional login',
+    AUTH0_LOGIN_MESSAGE:
+      'Continue with institutional login',
   })
 
   const auth0 = register(
@@ -205,52 +222,33 @@ for (const key of Object.keys(environment)) {
   }
 }
 
-// Verify Apollo path prefixes are retained in the Auth0 callback.
-for (const [url, callbackURL] of [
-  [
-    'https://apollo.example.org',
-    'https://apollo.example.org/auth/auth0',
-  ],
-  [
-    'https://apollo.example.org/',
-    'https://apollo.example.org/auth/auth0',
-  ],
-  [
-    'https://apollo.example.org/prefix',
-    'https://apollo.example.org/prefix/auth/auth0',
-  ],
-  [
-    'https://apollo.example.org/prefix/',
-    'https://apollo.example.org/prefix/auth/auth0',
-  ],
-]) {
-  test(
-    `constructs the callback URL for ${url}`,
-    () => {
-      const {
-        instances,
-      } = setup({
-        ...environment,
-        URL: url,
-      })
+// Pass the explicitly configured callback URL directly to the Auth0 handler.
+test('passes AUTH0_CALLBACK_URL to the Auth0 handler', () => {
+  const callbackURL =
+    'https://public.example.org/apollo/auth/auth0'
 
-      assert.equal(
-        instances.length,
-        1,
-      )
+  const {
+    instances,
+  } = setup({
+    ...environment,
+    AUTH0_CALLBACK_URL: callbackURL,
+  })
 
-      assert.deepEqual(
-        instances[0].options,
-        {
-          domain: environment.AUTH0_DOMAIN,
-          clientID: environment.AUTH0_CLIENT_ID,
-          clientSecret: environment.AUTH0_CLIENT_SECRET,
-          callbackURL,
-        },
-      )
+  assert.equal(
+    instances.length,
+    1,
+  )
+
+  assert.deepEqual(
+    instances[0].options,
+    {
+      domain: environment.AUTH0_DOMAIN,
+      clientID: environment.AUTH0_CLIENT_ID,
+      clientSecret: environment.AUTH0_CLIENT_SECRET,
+      callbackURL,
     },
   )
-}
+})
 
 // Verify Apollo requests are delegated to the persistent handler.
 test('delegates login requests to the Auth0 handler', async () => {
@@ -285,7 +283,8 @@ test('delegates login requests to the Auth0 handler', async () => {
     1,
   )
 
-  const call = instances[0].calls[0]
+  const call =
+    instances[0].calls[0]
 
   assert.equal(
     call.request,
@@ -390,7 +389,8 @@ test('keeps concurrent login outcomes independent', async () => {
   const rejection =
     assert.rejects(
       first,
-      received => received === error,
+      received =>
+        received === error,
     )
 
   firstCall.reject(

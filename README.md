@@ -84,8 +84,7 @@ yarn test: apollo
 Set the required environment variables on the Apollo collaboration server:
 
 ```env
-URL=https://apollo.example.org
-
+AUTH0_CALLBACK_URL=http://localhost:3999/auth/auth0
 AUTH0_DOMAIN=your-tenant.au.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret

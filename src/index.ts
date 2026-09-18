@@ -29,7 +29,7 @@ export default class ApolloAuth0Login extends Plugin {
     const domain = process.env.AUTH0_DOMAIN
     const clientID = process.env.AUTH0_CLIENT_ID
     const clientSecret = process.env.AUTH0_CLIENT_SECRET
-    const serverURL = process.env.URL
+    const callbackURL = process.env.AUTH0_CALLBACK_URL
 
     // Allow the Auth0 login button text to be customized.
     const loginMessage =
@@ -37,20 +37,10 @@ export default class ApolloAuth0Login extends Plugin {
       'Sign in with Auth0'
 
     // Do not register Auth0 when any required configuration is missing.
-    if (!domain || !clientID || !clientSecret || !serverURL) {
+    if (!domain || !clientID || !clientSecret || !callbackURL) {
       return
     }
 
-    // Normalize the Apollo base URL before appending the Auth0 callback path.
-    const base = serverURL.endsWith('/')
-      ? serverURL
-      : `${serverURL}/`
-
-    // Build the callback URL registered with the Auth0 application.
-    const callbackURL = new URL(
-      'auth/auth0',
-      base,
-    ).href
 
     // Create one long-lived handler so pending OAuth state survives the callback.
     const auth = new Auth0AuthHandler({

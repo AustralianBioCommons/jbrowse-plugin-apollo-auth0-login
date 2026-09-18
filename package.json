@@ -1,0 +1,59 @@
+{
+  "name": "jbrowse-plugin-apollo-auth0-login",
+  "version": "0.0.1",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "start": "npm-run-all --sequential clean --parallel 'start:*'",
+    "start:watch": "rolldown --config --watch",
+    "start:server": "serve --cors --no-request-logging --listen 9977 .",
+    "clean": "rimraf dist",
+    "build": "rolldown --config",
+    "prepack": "yarn build",
+    "test": "node --test test/*.test.cjs"
+  },
+  "jbrowse-plugin": {
+    "name": "ApolloAuth0Login"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@jbrowse/core": "^4.3.0"
+  },
+  "dependencies": {
+    "openid-client": "^6.8.8"
+  },
+  "devDependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@jbrowse/core": "^4.3.0",
+    "@jbrowse/mobx-state-tree": "^5.8.7",
+    "@mui/material": "^7.3.11",
+    "@mui/system": "^7.3.10",
+    "@mui/x-data-grid": "^8.0.0",
+    "@types/express": "^4.17.13",
+    "@types/node": "^24.10.9",
+    "@types/react": "^18.3.4",
+    "mobx": "^6.6.1",
+    "mobx-react": "^7.2.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.8.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rimraf": "^3.0.2",
+    "rolldown": "^1.1.1",
+    "rxjs": "^7.4.0",
+    "serve": "^14.0.1",
+    "typescript": "^5.5.3"
+  },
+  "private": true,
+  "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e"
+}

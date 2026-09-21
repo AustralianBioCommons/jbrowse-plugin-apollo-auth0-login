@@ -268,3 +268,45 @@ For a multi-replica deployment, replace the in-memory pending-auth map with a sh
 No Express browser session is required by the plugin.
 
 Auth0 logout is not implemented. Logging the user out of Apollo does not automatically create an Auth0 RP-Initiated Logout request; that requires separate integration.
+
+## 8. Build release
+
+- Review [package](./package.json) file `version` value has correct [semver](https://semver.org/) update
+- Build for required deployment, eg: node on x86
+
+```bash
+docker run --rm \
+  --platform linux/amd64 \
+  --volume "$PWD:/workspace" \
+  --workdir /workspace \
+  node:24-bookworm \
+  bash -lc '
+    corepack enable &&
+    corepack prepare yarn@4.18.0 --activate &&
+    yarn install --immutable &&
+    yarn typecheck &&
+    yarn test &&
+    npm pack
+  '
+```
+
+- Check file, eg: 
+
+```bash
+ls -lh jbrowse-plugin-apollo-auth0-login-0.0.1.tgz
+tar -tzf jbrowse-plugin-apollo-auth0-login-0.0.1.tgz
+```
+
+- Create release tag on `main` branch, eg:
+
+```bash
+git tag -a v0.0.1 -m "Release v0.0.1"
+git push origin v0.0.1
+```
+
+- Navigate to repo on github
+  - Select "Releases" > "Draft a new release"
+    - Choose "tag" , eg: `v0.0.1`
+    - Add release notes
+  - Upload tgz file
+  - Publish release

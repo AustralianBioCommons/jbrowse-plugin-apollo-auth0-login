@@ -1,7 +1,7 @@
 # jbrowse-plugin-apollo-auth0-login
 
 [![CI main](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml/badge.svg?branch=main)](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml?query=branch%3Amain)
-[![CI dev](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml/badge.svg?branch=dev)](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml?query=branch%3Adev)
+[Coverage reports](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml?query=branch%3Amain)
 
 Adds [Auth0](https://auth0.com) login to an [Apollo](https://apollo.jbrowse.org/) collaboration server using OpenID Connect (OIDC).
 
@@ -88,8 +88,8 @@ prove that a live Auth0 login succeeds.
 
 CI runs typechecking, coverage, builds, and smoke tests on pushes and pull requests.
 Download the `unit-test-coverage` artifact from a workflow run for the text and LCOV
-reports; artifacts are retained for 14 days. The badges show workflow status, not
-coverage percentages.
+reports; artifacts are retained for 14 days. The CI badge shows workflow status,
+not coverage percentages.
 
 The smoke tests evaluate both bundles without Node globals, supply JBrowse's Plugin
 base as a stub, then verify Apollo registration using a simulated server environment.

@@ -7,11 +7,18 @@ on:
       - main
       - dev
   workflow_dispatch:
+  # Detect upstream Apollo changes even when this plugin has no new commits.
+  schedule:
+    - cron: '17 2 * * 1'
+
+permissions:
+  contents: read
 
 jobs:
   unit-tests:
     name: Unit tests
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - name: Checkout plugin
@@ -33,15 +40,35 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Run unit tests
-        run: yarn test
+      - name: Check TypeScript
+        run: yarn typecheck
+
+      - name: Run unit tests with source coverage
+        id: coverage
+        run: yarn test:coverage
+
+      # Preserve reports for diagnosis even when a test fails.
+      - name: Upload coverage reports
+        if: ${{ !cancelled() && steps.coverage.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-coverage
+          path: |
+            coverage/summary.txt
+            coverage/lcov.info
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Build plugin
         run: yarn build
 
+      - name: Check development and production bundle loading
+        run: yarn test:bundle
+
   apollo-integration:
     name: Apollo custom-auth contract
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs: unit-tests
 
     # Skip integration only for direct pushes to dev.

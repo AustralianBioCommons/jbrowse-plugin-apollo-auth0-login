@@ -1,5 +1,8 @@
 # jbrowse-plugin-apollo-auth0-login
 
+[![CI main](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml/badge.svg?branch=main)](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml?query=branch%3Amain)
+[![CI dev](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml/badge.svg?branch=dev)](https://github.com/AustralianBioCommons/jbrowse-plugin-apollo-auth0-login/actions/workflows/apollo-integration.yml?query=branch%3Adev)
+
 Adds [Auth0](https://auth0.com) login to an [Apollo](https://apollo.jbrowse.org/) collaboration server using OpenID Connect (OIDC).
 
 The plugin follows the same custom-authentication architecture as the [Apollo ORCID plugin](https://github.com/GMOD/jbrowse-plugin-apollo-orcid-login):
@@ -71,15 +74,30 @@ The bundle may be served from the same web server as JBrowse/Apollo; it does not
 
 ### Local testing
 
-- Unit tests: `yarn test`
-- Integration test
+- TypeScript checks: `yarn typecheck`.
+- Unit tests: `yarn test`.
+- Source-mapped unit coverage: `yarn test:coverage` (Node.js 24+).
+- Bundle smoke tests: `yarn build && yarn test:bundle` (Node.js 24+).
+- Apollo contract checks: set `APOLLO3_PATH` to an existing Apollo3 checkout, then run `yarn test:apollo`.
 
-```bash
-#shallow clone of apollo3
-git clone --depth 1 https://github.com/GMOD/Apollo3.git /tmp/Apollo3
-export APOLLO_PATH=/tmp/Apollo3
-yarn test: apollo
-```
+Coverage reports are written to `coverage/summary.txt` and `coverage/lcov.info`.
+The report includes production TypeScript sources only and verifies that every
+current source module is represented. Coverage is informational; no percentage
+threshold is enforced yet. Tests mock the OIDC boundary, so coverage does not
+prove that a live Auth0 login succeeds.
+
+CI runs typechecking, coverage, builds, and smoke tests on pushes and pull requests.
+Download the `unit-test-coverage` artifact from a workflow run for the text and LCOV
+reports; artifacts are retained for 14 days. The badges show workflow status, not
+coverage percentages.
+
+The smoke tests evaluate both bundles without Node globals, supply JBrowse's Plugin
+base as a stub, then verify Apollo registration using a simulated server environment.
+They do not launch a browser or contact Auth0.
+
+The Apollo contract job also runs weekly on Monday at 02:17 UTC against upstream
+`main`. Direct pushes to `dev` skip the contract job; pull requests, manual runs,
+and scheduled runs include it. GitHub runs schedules from the default branch.
 
 ## 3. Configure Apollo
 
@@ -250,3 +268,45 @@ For a multi-replica deployment, replace the in-memory pending-auth map with a sh
 No Express browser session is required by the plugin.
 
 Auth0 logout is not implemented. Logging the user out of Apollo does not automatically create an Auth0 RP-Initiated Logout request; that requires separate integration.
+
+## 8. Build release
+
+- Review [package](./package.json) file `version` value has correct [semver](https://semver.org/) update
+- Build for required deployment, eg: node on x86
+
+```bash
+docker run --rm \
+  --platform linux/amd64 \
+  --volume "$PWD:/workspace" \
+  --workdir /workspace \
+  node:24-bookworm \
+  bash -lc '
+    corepack enable &&
+    corepack prepare yarn@4.18.0 --activate &&
+    yarn install --immutable &&
+    yarn typecheck &&
+    yarn test &&
+    npm pack
+  '
+```
+
+- Check file, eg: 
+
+```bash
+ls -lh jbrowse-plugin-apollo-auth0-login-0.0.1.tgz
+tar -tzf jbrowse-plugin-apollo-auth0-login-0.0.1.tgz
+```
+
+- Create release tag on `main` branch, eg:
+
+```bash
+git tag -a v0.0.1 -m "Release v0.0.1"
+git push origin v0.0.1
+```
+
+- Navigate to repo on github
+  - Select "Releases" > "Draft a new release"
+    - Choose "tag" , eg: `v0.0.1`
+    - Add release notes
+  - Upload tgz file
+  - Publish release

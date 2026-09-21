@@ -18,7 +18,10 @@
     "build": "rolldown --config",
     "prepack": "yarn build",
     "test": "node --test test/*.test.cjs",
-    "test:apollo": "node --test integration/apollo-contract.test.cjs"
+    "test:apollo": "node --test integration/apollo-contract.test.cjs",
+    "typecheck": "tsc --noEmit",
+    "test:coverage": "node scripts/coverage.mjs",
+    "test:bundle": "node --experimental-vm-modules --test integration/bundle.test.mjs"
   },
   "jbrowse-plugin": {
     "name": "ApolloAuth0Login"
